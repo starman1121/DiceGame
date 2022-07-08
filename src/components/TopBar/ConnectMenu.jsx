@@ -67,8 +67,8 @@ function ConnectMenu({ theme }) {
        
      <Link  href="" target="_blank" component={"a"} 
         className={`button-dapp-menu`}>
-          <Typography variant="h6">
-          <SvgIcon color="primary" component={DocIcon} />
+          <Typography className="menu_bar" variant="h6">
+            <SvgIcon color="primary" component={DocIcon} />
            <div className="dice-doc">Doc</div>
         </Typography>                 
       </Link>

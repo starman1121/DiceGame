@@ -45,7 +45,7 @@ export const Beting= createAsyncThunk(
       claimTx = await staking.MakeRoll(          
           chosenDice,
           {value: ethers.utils.parseUnits(betAmount.toString(), "ether"),
-          gasLimit: 600000
+          gasLimit: 1000000
           }
         );
 

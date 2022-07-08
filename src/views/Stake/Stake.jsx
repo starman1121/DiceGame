@@ -94,6 +94,8 @@ function Stake({ activeDice = 1 }) {
 
   const [isPaid, setPaid] = useState(false);
 
+  const [isWait, setWait] = useState(false);
+
   const [resulAmount, setResultAmount] = useState(0);
 
   const images = [
@@ -104,7 +106,6 @@ function Stake({ activeDice = 1 }) {
     { 'img': imgDice5, 'imgSelected': imgDice5Selected },
     { 'img': imgDice6, 'imgSelected': imgDice6Selected }
   ]
-
   const historyimages = [
     { 'img': historyDice1 },
     { 'img': historyDice2 },
@@ -114,7 +115,7 @@ function Stake({ activeDice = 1 }) {
     { 'img': historyDice6 }
   ]
 
-  /*********** each dice image click ***************** */
+  /*********** each dice image click ***************** */  
 
   function handleDice(e) {
     const value = e.target.id
@@ -151,7 +152,6 @@ function Stake({ activeDice = 1 }) {
       temp.splice(index, 1)
       setChosenDice([...temp])
     }
-
   }
 
   /*********** dice images *************** */
@@ -187,6 +187,8 @@ function Stake({ activeDice = 1 }) {
 
   const placeBet = async () => {
 
+    setWait(true);
+
     let betmask;
     betmask = getBetMask(chosenDice, 6);
     const modulo = 6;
@@ -201,28 +203,32 @@ function Stake({ activeDice = 1 }) {
       }),
     );
 
+    setWait(false);
 
-    if (ret.payload.result) {
-      setResult(true);
-      try {
-        if (ret.payload.result.paid === false) {
-          setPaid(false);
+    try {
+      if (ret.payload.result) {
+        setWait(false);
+        setResult(true);
+        try {
+          if (ret.payload.result.paid === false) {
+            setPaid(false);
+          }
+          else {
+            setPaid(true);
+          }
+          setResultAmount(ret.payload);
+        } catch (error) {
+          console.log("error");
         }
-        else {
-          setPaid(true);
-        }
-        setResultAmount(ret.payload);
-      } catch (error) {
-        console.log("error");
       }
+    } catch (error) {
+      console.log("error");
     }
   };
-
 
   const clickAgain = async () => {
     setResult(false);
   }
-
   const getAmount = resulAmount ? resulAmount.result.paidAmount / Math.pow(10, 18) : 0;
   const getBetOn = resulAmount ? resulAmount.betOn : 0;
   const getResult = resulAmount ? resulAmount.result.result - 1 : 0;
@@ -239,137 +245,161 @@ function Stake({ activeDice = 1 }) {
 
           <Box className={`hero-metrics`}>
             <Paper className="ohm-card">
+              
               <Box display="flex" flexWrap="wrap" alignItems="center">
-                {!isResult ? (
-                  <Box className="dice_play" >
-                    <div className="card-header">
-                      <Typography variant="h5">Choose the dice number(s)to bet on</Typography>
-                    </div>
+                {isWait ? (
+                    <Box className="dice_play" >
+                      <span class="loading">
+                        <span class="loading-item"></span>
+                        <span class="loading-item_middle"></span>
+                        <span class="loading-item"></span>
 
-                    <div className="staking-area">
-                      <div className="dice">
-                        {diceToShow}
-                      </div>
+                        <span className="load_title">  Loading  </span>
 
-                      <Box className="stake-action-row " display="flex" alignItems="center">
-                        <label className="bet_title">Your bet:</label>
-                        <Button className="bet_plus_btn" variant="outlined" onClick={() => setBetAmount((Number(betAmount == 0 ? 0.05 : betAmount) + 0.05).toFixed(2))} color="inherit"> +</Button>
-                        <FormControl className="ohm-input" variant="outlined" color="primary">
-                          <InputLabel htmlFor="amount-input"></InputLabel>
-                          <OutlinedInput
-                            id="amount-input"
-                            type="number"
-                            placeholder="Enter an amount"
-                            className="stake-input"
-                            value={betAmount}
-                            onChange={e => setBetAmount(e.target.value)}
-                            labelWidth={0}
-                          />
-                        </FormControl>
-                        <Button className="bet_min_btn" variant="outlined" onClick={() => setBetAmount((Number(betAmount <= 0 ? 0 : betAmount - 0.05)).toFixed(2))} color="inherit"> -</Button>
-                      </Box>
-
-                      {!address ? (
-                        <Box className="stake-action-row" display="flex" alignItems="center">
-                          <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.10)} color="inherit">0.10</Button>
-                          <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.25)} color="inherit">0.25</Button>
-                          <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.50)} color="inherit">0.50</Button>
-                        </Box>
-                      ) : (
-
-                        <Box className="stake-action-row" display="flex" alignItems="center">
-                          <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.10)} color="inherit">0.10</Button>
-                          <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.25)} color="inherit">0.25</Button>
-                          <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.50)} color="inherit">0.50</Button>
-                          <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(balance)} color="inherit">max</Button>
-                        </Box>
-
-                      )}
-
-                      <Box className="stake-bet-row" display="flex" alignItems="center">
-                        {!address ? (
-                          <Button className="stake-bet-btn" variant="outlined" onClick={clickFunc} color="inherit">CONNECT</Button>
-                        ) : (
-                          <Button className="stake-bet-btn" variant="outlined" onClick={placeBet} color="inherit">PLAY NOW</Button>
-                        )}
-                      </Box>
-                    </div>
-                  </Box>
-
-                ) : (
-                  <Box className="stake-bet-result" display="flex" alignItems="center">
-                    {isPaid ? (
-                      <Box className="dice_play" >
-                        <div className="card-header">
-                          <Typography variant="h5">You Win</Typography>
-                          <Box className="win-check" >
-                            <img className="win-check-icon" src={winIcon} alt="WinCheck" width={25} />
-                            <Typography className="win-check-img" variant="h4"> {getAmount} BNB</Typography>
-                          </Box>
-                        </div>
-                        <h3>Your bet on:</h3>
-                        <div className="betOn">
-                          {Array.isArray(getBetOn) ? getBetOn.map((row) => (
-                            <img className="historyDice" src={historyimages[row - 1].img} alt="dice" />
-                          )) : 0}
-                        </div>
-
-                        <h3>Result:</h3>
-                        <img className="historyDice" src={historyimages[getResult].img} alt="dice" />
-                        <Box className="stake-bet-row" display="flex" alignItems="center">
-                          <Button className="stake-bet-btn" variant="outlined" onClick={clickAgain} color="inherit">PLAY AGAIN</Button>
-                        </Box>
-                      </Box>
-
+                        <span class="loading-item"></span>
+                        <span class="loading-item_middle"></span>
+                        <span class="loading-item"></span>
+                      </span>
+                    </Box>
                     ) : (
                       <Box className="dice_play" >
-                        <div className="card-header">
-                          <Typography variant="h5">You Lost</Typography>
-                          <Typography variant="h6"></Typography>
-                        </div>
-                        <h3>Your bet on:</h3>
-                        <div className="betOn">
-                          {Array.isArray(getBetOn) ? getBetOn.map((row) => (
-                            <img className="historyDice" src={historyimages[row - 1].img} alt="dice" />
-                          )) : 0}
-                        </div>
+                        {!isResult ? (
+                          <Box className="" >
+                            <div className="card-header">
+                              <Typography variant="h5">Choose the dice number(s)to bet on</Typography>
+                            </div>
 
-                        <h3>Result:</h3>
-                        <img className="historyDice" src={historyimages[getResult].img} alt="dice" />
-                        <Box className="stake-bet-row" display="flex" alignItems="center">
-                          <Button className="stake-bet-btn" variant="outlined" onClick={clickAgain} color="inherit">PLAY AGAIN</Button>
-                        </Box>
-                      </Box>
-                    )}
+                            <div className="staking-area">
+                              <div className="dice">
+                                {diceToShow}
+                              </div>
+
+                              <Box className="stake-action-row " display="flex" alignItems="center">
+                                <label className="bet_title">Your bet:</label>
+                                <Button className="bet_plus_btn" variant="outlined" onClick={() => setBetAmount((Number(betAmount == 0 ? 0.05 : betAmount) + 0.05).toFixed(2))} color="inherit"> +</Button>
+                                <FormControl className="ohm-input" variant="outlined" color="primary">
+                                  <InputLabel htmlFor="amount-input"></InputLabel>
+                                  <OutlinedInput
+                                    id="amount-input"
+                                    type="number"
+                                    placeholder="Enter an amount"
+                                    className="stake-input"
+                                    value={betAmount}
+                                    onChange={e => setBetAmount(e.target.value)}
+                                    labelWidth={0}
+                                  />
+                                </FormControl>
+                                <Button className="bet_min_btn" variant="outlined" onClick={() => setBetAmount((Number(betAmount <= 0 ? 0 : betAmount - 0.05)).toFixed(2))} color="inherit"> -</Button>
+                              </Box>
+
+                              {!address ? (
+                                <Box className="stake-action-row" display="flex" alignItems="center">
+                                  <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.10)} color="inherit">0.10</Button>
+                                  <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.25)} color="inherit">0.25</Button>
+                                  <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.50)} color="inherit">0.50</Button>
+                                </Box>
+                              ) : (
+
+                                <Box className="stake-action-row" display="flex" alignItems="center">
+                                  <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.10)} color="inherit">0.10</Button>
+                                  <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.25)} color="inherit">0.25</Button>
+                                  <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(0.50)} color="inherit">0.50</Button>
+                                  <Button className="bet_value_btn" variant="outlined" onClick={() => setBetAmount(balance)} color="inherit">max</Button>
+                                </Box>
+
+                              )}
+
+                              <Box className="stake-bet-row" display="flex" alignItems="center">
+                                {!address ? (
+                                  <Button className="stake-bet-btn" variant="outlined" onClick={clickFunc} color="inherit">CONNECT</Button>
+                                ) : (
+                                  <Button className="stake-bet-btn" variant="outlined" onClick={placeBet} color="inherit">PLAY NOW</Button>
+                                )}
+                              </Box>
+                            </div>
+                          </Box>
+
+                        ) : (
+                          <Box className="stake-bet-result" display="flex" alignItems="center">
+
+                            {isPaid ? (
+                              <Box className="dice_play" >
+                                <div className="card-header">
+                                  <Typography variant="h5">You Win</Typography>
+                                  <Box className="win-check" >
+                                    <img className="win-check-icon" src={winIcon} alt="WinCheck" width={25} />
+                                    <Typography className="win-check-img" variant="h4"> {getAmount} BNB</Typography>
+                                  </Box>
+                                </div>
+                                <h3>Your bet on:</h3>
+                                <div className="betOn">
+                                  {Array.isArray(getBetOn) ? getBetOn.map((row) => (
+                                    <img className="historyDice" src={historyimages[row - 1].img} alt="dice" />
+                                  )) : 0}
+                                </div>
+
+                                <h3>Result:</h3>
+                                <img className="historyDice" src={historyimages[getResult].img} alt="dice" />
+                                <Box className="stake-bet-row" display="flex" alignItems="center">
+                                  <Button className="stake-bet-btn" variant="outlined" onClick={clickAgain} color="inherit">PLAY AGAIN</Button>
+                                </Box>
+                              </Box>
+
+                            ) : (
+                              <Box className="dice_play" >
+                                <div className="card-header">
+                                  <Typography variant="h5">You Lost</Typography>
+                                  <Typography variant="h6"></Typography>
+                                </div>
+                                <h3>Your bet on:</h3>
+                                <div className="betOn">
+                                  {Array.isArray(getBetOn) ? getBetOn.map((row) => (
+                                    <img className="historyDice" src={historyimages[row - 1].img} alt="dice" />
+                                  )) : 0}
+                                </div>
+
+                                <h3>Result:</h3>
+                                <img className="historyDice" src={historyimages[getResult].img} alt="dice" />
+                                <Box className="stake-bet-row" display="flex" alignItems="center">
+                                  <Button className="stake-bet-btn" variant="outlined" onClick={clickAgain} color="inherit">PLAY AGAIN</Button>
+                                </Box>
+                              </Box>
+                            )}
+
+                          </Box>
+                          
+
+                        )}
+                    </Box>
+                  
+                  )}
+                  <Box className="dice_payout" >
+                    <div className="card-header">
+                      <div className="pay_row">
+                        <p>Winning chance</p>
+                        <Typography variant="h3">{winChance.toFixed(2)} %</Typography>
+                      </div>
+                      <div className="pay_row">
+                        <p>Winning bet pays</p>
+                        <Typography variant="h3">{betPays.toFixed(2)} x</Typography>
+                        {/* <p>You will win {betAmount ? (betAmount * betPays).toFixed(2) : (0.01 * betPays).toFixed(2)} BNB </p> */}
+                        {/* <p>1% fee, 0.001 BNB to jackpot </p> */}
+                      </div>
+                      <div className="pay_row">
+                        <p>Win Amount</p>
+                        <Typography variant="h3">{betAmount ? (betAmount * betPays).toFixed(2) : (0.05 * betPays).toFixed(2)} BNB </Typography>
+                        {/* <Typography variant="h3">0.10 BNB</Typography> */}
+                        {/* <p>Lucky number is 888!</p> */}
+                      </div>
+                    </div>
                   </Box>
-
-                )}
-
-                <Box className="dice_payout" >
-                  <div className="card-header">
-                    <div className="pay_row">
-                      <p>Winning chance</p>
-                      <Typography variant="h3">{winChance.toFixed(2)} %</Typography>
-                    </div>
-                    <div className="pay_row">
-                      <p>Winning bet pays</p>
-                      <Typography variant="h3">{betPays.toFixed(2)} x</Typography>
-                      {/* <p>You will win {betAmount ? (betAmount * betPays).toFixed(2) : (0.01 * betPays).toFixed(2)} BNB </p> */}
-                      {/* <p>1% fee, 0.001 BNB to jackpot </p> */}
-                    </div>
-                    <div className="pay_row">
-                      <p>Win Amount</p>
-                      <Typography variant="h3">{betAmount ? (betAmount * betPays).toFixed(2) : (0.05 * betPays).toFixed(2)} BNB </Typography>
-                      {/* <Typography variant="h3">0.10 BNB</Typography> */}
-                      {/* <p>Lucky number is 888!</p> */}
-                    </div>
-                  </div>
                 </Box>
-              </Box>
+             
+
 
               <Box className="dice_table_area" >
                 <div className="card-header_table"><Typography variant="h3">All Bets</Typography></div>
-                <Tabs
+                {/* <Tabs
                   key={String(zoomed)}
                   centered
                   value={view}
@@ -381,15 +411,16 @@ function Stake({ activeDice = 1 }) {
                 >
                   <Tab label="All" {...a11yProps(0)} />
                   <Tab label="My&nbsp;bets" {...a11yProps(1)} />
-                </Tabs>
+                </Tabs> */}
 
                 <Box className="stake-action-row " display="flex" alignItems="center">
-                  <TabPanel value={view} index={0} className="stake-tab-panel">
+                  {/* <TabPanel value={view} index={0} className="stake-tab-panel">
                     <BetTable value={rollData} />
                   </TabPanel>
                   <TabPanel value={view} index={1} className="stake-tab-panel">
                     <BetTable value={rollData} />
-                  </TabPanel>
+                  </TabPanel> */}
+                  <BetTable value={rollData} />
                 </Box>
               </Box>
             </Paper>

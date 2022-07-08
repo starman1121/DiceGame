@@ -35,6 +35,9 @@
     height: 20px;
     
   }
+  .stake-action-row{
+    margin:20px;
+  }
   .stake-note {
     text-align: center;
     font-style: italic;
@@ -438,4 +441,83 @@
 }
 .MuiTabs-fixed {
   height: 50px !important;
+}
+.loading-item {
+  display: inline-block;
+  background-color: rgb(255, 255, 255);
+  width: 16px;
+  height: 16px;
+  margin: 2px;
+  border-radius: 100%;
+  animation: 0.7s linear 0s infinite normal both running animation-1bzpvkt;
+}
+
+.loading-item_middle {
+  display: inline-block;
+  background-color: rgb(255, 255, 255);
+  width: 16px;
+  height: 16px;
+  margin: 2px;
+  border-radius: 100%;
+  animation: 0.7s linear 0.35s infinite normal both running animation-1bzpvkt;
+}
+.load_title{
+  font-size: 25px;
+}
+
+
+@keyframes animation-1bzpvkt {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@-o-keyframes animation-1bzpvkt {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@-moz-keyframes animation-1bzpvkt {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes animation-1bzpvkt {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }

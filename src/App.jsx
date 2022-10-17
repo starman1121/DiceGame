@@ -18,7 +18,6 @@ import TopBar from "./components/TopBar/TopBar.jsx";
 import NavDrawer from "./components/Sidebar/NavDrawer.jsx";
 import Messages from "./components/Messages/Messages";
 import NotFound from "./views/404/NotFound";
-
 import { dark as darkTheme } from "./themes/dark.js";
 import { girth as gTheme } from "./themes/girth.js";
 import "./style.scss";
